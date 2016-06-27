@@ -469,22 +469,5 @@ var _ = Describe("Store", func() {
 			store := NewStore(&StoreInput{Reducer: Reducers["todos"]})
 			Expect(func() { store.Dispatch(&Action{}) }).To(Panic())
 		})
-
-		It("Exposes Dispatcher to be replaced", func() {
-			store := NewStore(&StoreInput{Reducer: Reducers["todos"]})
-
-			dispatcher := store.Dispatcher()
-			wrapper := func(action *Action) *Action {
-				return dispatcher(action)
-			}
-
-			spy := MakeSpy(wrapper, &wrapper)
-
-			store.ReplaceDispatch(wrapper)
-			Expect(spy.Calls).To(HaveLen(0))
-
-			store.Dispatch(UnknownAction())
-			Expect(spy.Calls).To(HaveLen(1))
-		})
 	})
 })

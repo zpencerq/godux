@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	. "github.com/zpencerq/godux"
-	. "github.com/zpencerq/godux/middleware"
 )
 
 type Todo struct {

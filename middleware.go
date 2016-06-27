@@ -1,8 +1,4 @@
-package middleware
-
-import (
-	. "github.com/zpencerq/godux"
-)
+package godux
 
 type MiddlewareContext struct {
 	State    func() State
@@ -15,7 +11,7 @@ func Apply(middlewares ...Middleware) func(StoreFactory) StoreFactory {
 	return func(createStore StoreFactory) StoreFactory {
 		return func(si *StoreInput) *Store {
 			store := createStore(si)
-			dispatch := store.Dispatcher()
+			dispatch := store.dispatcher
 
 			chain := make([]interface{}, 0, 0)
 
@@ -32,7 +28,7 @@ func Apply(middlewares ...Middleware) func(StoreFactory) StoreFactory {
 
 			dispatch = Compose(chain...)(dispatch).(Dispatcher)
 
-			store.ReplaceDispatch(dispatch)
+			store.dispatcher = dispatch
 
 			return store
 		}

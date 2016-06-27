@@ -1,4 +1,4 @@
-package middleware_test
+package godux_test
 
 import (
 	. "github.com/zpencerq/godux"
@@ -98,6 +98,26 @@ var _ = Describe("Middleware", func() {
 				}
 				close(done)
 			}()
+		})
+
+		It("Uses contextual dispatch when none is given", func() {
+			dispatch := func(action *Action) *Action { return action }
+			getState := func() State { return "hi" }
+			mc := &MiddlewareContext{getState, dispatch}
+
+			var nextSpy *Spy
+
+			test := CreateSimpleMiddleware(func(mc *MiddlewareContext, next Dispatcher, action *Action) *Action {
+				if nextSpy == nil {
+					nextSpy = MakeSpy(next, &next)
+				}
+
+				return next(action)
+			})
+
+			Expect(test(mc)(nil)(AddTodo("Hi"))).To(Equal(AddTodo("Hi")))
+
+			Expect(nextSpy.Calls).To(HaveLen(1))
 		})
 	})
 })
