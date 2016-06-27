@@ -3,12 +3,10 @@
 set -e
 echo "" > coverage.txt
 
-for d in $(find . -maxdepth 10 -type d \! -name examples); do
-    if ls $d/*.go &> /dev/null; then
-        go test -v -coverprofile=profile.out -covermode=atomic $d
-        if [ -f profile.out ]; then
-            cat profile.out >> coverage.txt
-            rm profile.out
-        fi
-    fi
+ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -v
+for f in $(find . -maxdepth 10 -type f -name \*.coverprofile); do
+  if [ -f "$f" ]; then
+    cat $f >> coverage.txt
+    rm $f
+  fi
 done
