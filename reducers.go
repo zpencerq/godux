@@ -54,10 +54,14 @@ func Combine(reducers map[string]Reducer) Reducer {
 		nextState := make(map[string]interface{})
 
 		for key, reducer := range reducers {
-			previousValue, _ := previousState.(map[string]interface{})[key]
+			previousValue, ok := previousState.(map[string]interface{})[key]
 			nextValue := reducer(previousValue, a)
 			nextState[key] = nextValue
-			hasChanged = hasChanged || (&nextValue != &previousValue)
+			if ok && reflect.TypeOf(nextValue).Comparable() && reflect.TypeOf(previousValue).Comparable() {
+				hasChanged = hasChanged || (nextValue != previousValue)
+			} else {
+				hasChanged = hasChanged || (&nextValue != &previousValue)
+			}
 		}
 
 		if hasChanged {
@@ -80,24 +84,5 @@ func CombineReducers(reducers ...Reducer) Reducer {
 		reducerMap[s[len(s)-1]] = reducer
 	}
 
-	return func(previousState interface{}, a *Action) interface{} {
-		if previousState == nil {
-			previousState = make(map[string]interface{})
-		}
-		hasChanged := false
-		nextState := make(map[string]interface{})
-
-		for key, reducer := range reducerMap {
-			previousValue, _ := previousState.(map[string]interface{})[key]
-			nextValue := reducer(previousValue, a)
-			nextState[key] = nextValue
-			hasChanged = hasChanged || (&nextValue != &previousValue)
-		}
-
-		if hasChanged {
-			return nextState
-		} else {
-			return previousState
-		}
-	}
+	return Combine(reducerMap)
 }

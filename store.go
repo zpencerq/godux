@@ -74,7 +74,6 @@ func (s *Store) State() State {
 func (s *Store) Subscribe(l Listener) func() {
 	subscribed := true
 
-	s.ensureCanMutateNextListeners()
 	s.nextListeners.Add(&l)
 
 	return func() {
@@ -84,14 +83,7 @@ func (s *Store) Subscribe(l Listener) func() {
 
 		subscribed = false
 
-		s.ensureCanMutateNextListeners()
 		s.nextListeners.Delete(&l)
-	}
-}
-
-func (s *Store) ensureCanMutateNextListeners() {
-	if s.nextListeners.Equal(s.listeners) {
-		s.nextListeners = s.listeners.Clone()
 	}
 }
 

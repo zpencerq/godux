@@ -2,8 +2,6 @@ package godux
 
 import (
 	"container/list"
-	"fmt"
-	"strings"
 	"sync"
 )
 
@@ -31,7 +29,7 @@ func (ls *ListenerSet) Equal(o *ListenerSet) bool {
 	e := ls.Front()
 	f := o.Front()
 	for e != nil && f != nil {
-		if e != f {
+		if e.Value != f.Value {
 			return false
 		}
 		if e != nil {
@@ -82,15 +80,4 @@ func (ls *ListenerSet) Signal() {
 	for e := ls.Front(); e != nil; e = e.Next() {
 		(*e.Value.(*Listener))()
 	}
-}
-
-func (ls *ListenerSet) String() string {
-	ls.RLock()
-	defer ls.RUnlock()
-
-	result := make([]string, ls.Len())
-	for e := ls.Front(); e != nil; e = e.Next() {
-		result = append(result, fmt.Sprintf("%s", e.Value))
-	}
-	return strings.Join(result, ",")
 }

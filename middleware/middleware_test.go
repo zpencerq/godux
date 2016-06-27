@@ -1,35 +1,14 @@
-package godux_test
+package middleware_test
 
 import (
 	. "github.com/zpencerq/godux"
+	. "github.com/zpencerq/godux/middleware"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Middleware", func() {
-	reducers := map[string]func(interface{}, *Action) interface{}{
-		"todos": func(state interface{}, a *Action) interface{} {
-			if state == nil {
-				state = []Todo{}
-			}
-
-			switch a.Type {
-			case ADD_TODO:
-				slice := state.([]Todo)
-				newSlice := make([]Todo, len(state.([]Todo)))
-				copy(newSlice, slice)
-				newSlice = append(newSlice, Todo{
-					Id:   MaxId(slice) + 1,
-					Text: a.Value.(string),
-				})
-				return newSlice
-			default:
-				return state
-			}
-		},
-	}
-
 	Describe("Apply", func() {
 		It("Wraps dispatch method with middleware once", func() {
 			fn := func(args ...interface{}) {}
@@ -44,7 +23,7 @@ var _ = Describe("Middleware", func() {
 				}
 			}
 
-			store := Apply(test, Thunk)(NewStore)(&StoreInput{Reducer: reducers["todos"]})
+			store := Apply(test, Thunk)(NewStore)(&StoreInput{Reducer: Reducers["todos"]})
 
 			store.Dispatch(AddTodo("Use Redux"))
 			store.Dispatch(AddTodo("Flux FTW!"))
@@ -78,7 +57,7 @@ var _ = Describe("Middleware", func() {
 				}
 			})
 
-			store := Apply(test, thunk)(NewStore)(&StoreInput{Reducer: reducers["todos"]})
+			store := Apply(test, thunk)(NewStore)(&StoreInput{Reducer: Reducers["todos"]})
 
 			go func() {
 				if promise, ok := store.Dispatch(AddTodoAsync("Use Redux")).Value.(FutureAction); ok {
@@ -90,7 +69,7 @@ var _ = Describe("Middleware", func() {
 		})
 
 		It("Works with thunk middleware", func(done Done) {
-			store := Apply(Thunk)(NewStore)(&StoreInput{Reducer: reducers["todos"]})
+			store := Apply(Thunk)(NewStore)(&StoreInput{Reducer: Reducers["todos"]})
 
 			store.Dispatch(AddTodoIfEmpty("Hello"))
 			Expect(store.State()).To(Equal([]Todo{

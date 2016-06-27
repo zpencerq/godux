@@ -1,7 +1,5 @@
 package godux
 
-import "reflect"
-
 type Action struct {
 	Type  string
 	Value interface{}
@@ -35,28 +33,4 @@ func BindActionCreators(creators map[string]ActionCreator, dispatch Dispatcher) 
 		result[k] = BindActionCreator(creator, dispatch)
 	}
 	return result
-}
-
-// This replaces the fields in the struct with bound creators
-func BindActionCreatorsStruct(creators interface{}, dispatch Dispatcher) interface{} {
-	value := reflect.ValueOf(creators)
-	if value.Elem().Kind() != reflect.Struct {
-		panic("Creators not given in *struct")
-	}
-
-	copy := creators
-
-	for idx := 0; idx < value.Elem().NumField(); idx++ {
-		field := reflect.ValueOf(creators).Elem().Field(idx)
-
-		fptr := field.Interface().(ActionCreator)
-		wrapper := func(i interface{}) *Action {
-			return dispatch(fptr(i))
-		}
-
-		dstField := reflect.ValueOf(copy).Elem().Field(idx)
-		ptr := dstField.Addr().Interface().(*ActionCreator)
-		*ptr = wrapper
-	}
-	return copy
 }

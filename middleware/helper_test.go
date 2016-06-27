@@ -1,4 +1,4 @@
-package godux_test
+package middleware_test
 
 import (
 	"reflect"

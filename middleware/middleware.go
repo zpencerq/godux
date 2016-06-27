@@ -1,4 +1,8 @@
-package godux
+package middleware
+
+import (
+	. "github.com/zpencerq/godux"
+)
 
 type MiddlewareContext struct {
 	State    func() State
@@ -11,7 +15,7 @@ func Apply(middlewares ...Middleware) func(StoreFactory) StoreFactory {
 	return func(createStore StoreFactory) StoreFactory {
 		return func(si *StoreInput) *Store {
 			store := createStore(si)
-			dispatch := store.dispatcher
+			dispatch := store.Dispatcher()
 
 			chain := make([]interface{}, 0, 0)
 
@@ -38,17 +42,12 @@ func Apply(middlewares ...Middleware) func(StoreFactory) StoreFactory {
 func CreateSimpleMiddleware(callback func(*MiddlewareContext, Dispatcher, *Action) *Action) Middleware {
 	return func(c *MiddlewareContext) func(Dispatcher) Dispatcher {
 		return func(d Dispatcher) Dispatcher {
+			if d == nil {
+				d = c.Dispatch
+			}
 			return func(a *Action) *Action {
 				return callback(c, d, a)
 			}
-		}
-	}
-}
-
-func NoopMiddleware(mc *MiddlewareContext) func(Dispatcher) Dispatcher {
-	return func(next Dispatcher) Dispatcher {
-		return func(action *Action) *Action {
-			return next(action)
 		}
 	}
 }
